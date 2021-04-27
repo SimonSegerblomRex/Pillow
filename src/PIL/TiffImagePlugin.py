@@ -1466,18 +1466,6 @@ def _save(im, fp, filename):
     ifd[IMAGEWIDTH] = im.size[0]
     ifd[IMAGELENGTH] = im.size[1]
 
-    # write any arbitrary tags passed in as an ImageFileDirectory
-    info = im.encoderinfo.get("tiffinfo", {})
-    logger.debug("Tiffinfo Keys: %s" % list(info))
-    if isinstance(info, ImageFileDirectory_v1):
-        info = info.to_v2()
-    for key in info:
-        ifd[key] = info.get(key)
-        try:
-            ifd.tagtype[key] = info.tagtype[key]
-        except Exception:
-            pass  # might not be an IFD. Might not have populated type
-
     # additions written by Greg Couch, gregc@cgl.ucsf.edu
     # inspired by image-sig posting from Kevin Cazabon, kcazabon@home.com
     if hasattr(im, "tag_v2"):
@@ -1545,6 +1533,18 @@ def _save(im, fp, filename):
     ifd[STRIPOFFSETS] = 0  # this is adjusted by IFD writer
     # no compression by default:
     ifd[COMPRESSION] = COMPRESSION_INFO_REV.get(compression, 1)
+
+    # write any arbitrary tags passed in as an ImageFileDirectory
+    info = im.encoderinfo.get("tiffinfo", {})
+    logger.debug("Tiffinfo Keys: %s" % list(info))
+    if isinstance(info, ImageFileDirectory_v1):
+        info = info.to_v2()
+    for key in info:
+        ifd[key] = info.get(key)
+        try:
+            ifd.tagtype[key] = info.tagtype[key]
+        except Exception:
+            pass  # might not be an IFD. Might not have populated type
 
     if libtiff:
         if "quality" in im.encoderinfo:
